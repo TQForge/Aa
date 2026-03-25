@@ -84,7 +84,6 @@
       transition:border-color .18s, color .18s, transform .18s var(--ease);
     }
     .btn-no:hover { border-color:var(--danger); color:var(--danger); transform:translateY(-2px); }
-    .gate-legal { font-size:.73rem; color:rgba(255,255,255,.2); line-height:1.5; }
 
     /* DENIED SCREEN */
     #denied-screen {
@@ -139,17 +138,9 @@
 
     .video-info { position:absolute; bottom:0; left:0; right:72px; z-index:2; padding:0 20px 100px; }
     .video-user { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-    .user-avatar { width:38px; height:38px; border-radius:50%; border:2px solid rgba(255,255,255,.5); overflow:hidden; }
-    .user-avatar img { width:100%; height:100%; object-fit:cover; }
     .user-name { font-weight:600; font-size:.95rem; }
-    .follow-btn {
-      background:transparent; border:1.5px solid rgba(255,255,255,.7); color:#fff;
-      border-radius:6px; font-size:.78rem; font-weight:600; padding:4px 12px; cursor:pointer;
-    }
-    .follow-btn.followed { background:var(--accent); border-color:var(--accent); color:#080808; }
     .video-title { font-family:var(--fh); font-size:1.15rem; line-height:1.3; margin-bottom:5px; }
     .video-desc  { font-size:.85rem; color:rgba(255,255,255,.75); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-    .tag { font-size:.78rem; color:var(--accent); font-weight:500; margin-right:6px; }
 
     .video-actions {
       position:absolute; right:12px; bottom:100px; z-index:2;
@@ -161,25 +152,12 @@
       display:flex; align-items:center; justify-content:center; backdrop-filter:blur(10px);
       border:1px solid rgba(255,255,255,0.08); transition: transform 0.2s;
     }
-    .action-btn:active .action-icon { transform: scale(0.9); }
     .action-icon svg { width:22px; height:22px; fill:none; stroke:#fff; stroke-width:1.8; }
     .action-count { font-size:.78rem; font-weight:500; color:rgba(255,255,255,.85); }
-    .liked .action-icon svg { fill: #ff4444; stroke: #ff4444; }
-    .saved .action-icon svg { fill: var(--accent); stroke: var(--accent); }
+    .liked .action-icon { background: rgba(255, 68, 68, 0.3); border-color: #ff4444; }
 
     .tap-target { position:absolute; inset:0; z-index:3; cursor:pointer; }
-    .play-pause-indicator {
-      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
-      width:72px; height:72px; background:rgba(255,255,255,.18); border-radius:50%;
-      display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none;
-    }
-    .play-pause-indicator.show { animation: ppPop .65s var(--ease) forwards; }
-    @keyframes ppPop {
-      0% {transform:translate(-50%,-50%) scale(.5); opacity:0;}
-      50% {opacity:1;}
-      100% {transform:translate(-50%,-50%) scale(1.2); opacity:0;}
-    }
-
+    
     #mute-indicator {
       position:fixed; top:68px; right:14px; z-index:200;
       background:rgba(0,0,0,.7); border-radius:30px; padding:7px 14px;
@@ -196,8 +174,6 @@
     .comments-list { overflow-y:auto; flex:1; padding:16px 20px; }
     .comment-item { display:flex; gap:12px; margin-bottom:18px; }
     .comment-avatar { width:32px; height:32px; border-radius:50%; background:var(--accent); color:#000; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem; }
-    .comment-name { font-size:.82rem; font-weight:700; margin-bottom:2px; }
-    .comment-text { font-size:.88rem; color:rgba(255,255,255,0.8); }
     .comment-input-row { display:flex; gap:10px; padding:12px 16px; border-top:1px solid var(--border); }
     .comment-input { flex:1; background:rgba(255,255,255,0.07); border:1px solid var(--border); border-radius:24px; color:#fff; padding:10px 16px; outline:none; }
 
@@ -279,10 +255,7 @@
   </div>
 
   <nav id="bottom-nav">
-    <button class="bnav-btn active" id="bnav-home">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-      Home
-    </button>
+    <button class="bnav-btn active" id="bnav-home"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</button>
     <button class="bnav-btn" id="bnav-discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>Discover</button>
     <button class="bnav-btn" id="bnav-upload"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/></svg>Upload</button>
     <button class="bnav-btn" id="bnav-me"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>Me</button>
@@ -301,20 +274,23 @@
 
 <div id="toast"></div>
 
-<!-- ADS SCRIPTS -->
+<!-- ================= ADVERTISING SCRIPTS ================= -->
 <!-- Popunder Ad -->
 <script src="https://pl28979872.profitablecpmratenetwork.com/97/1b/d6/971bd603d0aef837c8d73b5b3f464ed4.js"></script>
-<!-- Social Bar Ad -->
+<!-- Social Bar Ad #1 -->
 <script src="https://pl28979924.profitablecpmratenetwork.com/70/6f/31/706f315b5bec967372ff3f63ddfe3c48.js"></script>
+<!-- Social Bar Ad #2 (Additional) -->
+<script src="https://pl28979969.profitablecpmratenetwork.com/5f/e4/ba/5fe4ba574388c1ed031c68bd29adf97a.js"></script>
+<!-- ======================================================= -->
 
 <script>
 (function () {
   'use strict';
 
   var VIDEOS = [
-    { id:1, url:'https://www.w3schools.com/html/mov_bbb.mp4', poster:'https://picsum.photos/seed/v1/400/700', title:'Big Buck Bunny', desc:"Lovable rabbit adventure.", username:'@blender', avatar:'https://picsum.photos/seed/u1/64/64', likes:148200, comments:3410 },
-    { id:2, url:'https://www.w3schools.com/html/movie.mp4', poster:'https://picsum.photos/seed/v2/400/700', title:'Futuristic City', desc:'Neon-lit streets clip.', username:'@neonvisions', avatar:'https://picsum.photos/seed/u2/64/64', likes:92500, comments:1207 },
-    { id:3, url:'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', poster:'https://picsum.photos/seed/v3/400/700', title:'Elephants Dream', desc:'Surreal journey.', username:'@dreamer', avatar:'https://picsum.photos/seed/u3/64/64', likes:214700, comments:5882 }
+    { id:1, url:'https://www.w3schools.com/html/mov_bbb.mp4', poster:'https://picsum.photos/seed/v1/400/700', title:'Big Buck Bunny', desc:"A rabbit's big adventure.", username:'@blender', likes:148200, comments:3410 },
+    { id:2, url:'https://www.w3schools.com/html/movie.mp4', poster:'https://picsum.photos/seed/v2/400/700', title:'Futuristic City', desc:'Neon lights and speed.', username:'@neonvisions', likes:92500, comments:1207 },
+    { id:3, url:'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', poster:'https://picsum.photos/seed/v3/400/700', title:'Elephants Dream', desc:'A surreal mechanical journey.', username:'@dreamer', likes:214700, comments:5882 }
   ];
 
   var isMuted = false, currentIndex = 0;
@@ -359,10 +335,11 @@
         <div class="video-info">
           <div class="video-user"><span class="user-name">${v.username}</span></div>
           <div class="video-title">${v.title}</div>
+          <div class="video-desc">${v.desc}</div>
         </div>
         <div class="video-actions">
           <div class="action-btn" onclick="this.classList.toggle('liked')"><div class="action-icon">❤</div><span class="action-count">${v.likes}</span></div>
-          <div class="action-btn" onclick="document.getElementById('comments-drawer').classList.add('open'); document.getElementById('drawer-backdrop').classList.add('visible');"><div class="action-icon">💬</div><span class="action-count">${v.comments}</span></div>
+          <div class="action-btn" onclick="getById('comments-drawer').classList.add('open'); getById('drawer-backdrop').classList.add('visible');"><div class="action-icon">💬</div><span class="action-count">${v.comments}</span></div>
         </div>`;
       feed.appendChild(div);
     });
