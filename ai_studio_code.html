@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>FLUX · Stream</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #080808;
+      --surface: #111111;
+      --border:  rgba(255,255,255,0.08);
+      --accent:  #e8ff3c;
+      --danger:  #ff4444;
+      --text:    #f0f0f0;
+      --muted:   rgba(240,240,240,0.45);
+      --ease:    cubic-bezier(0.22, 1, 0.36, 1);
+      --fh:      'DM Serif Display', Georgia, serif;
+      --fb:      'DM Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg); color: var(--text);
+      font-family: var(--fb); overflow: hidden;
+    }
+
+    /* AGE GATE */
+    #age-gate {
+      position: fixed; inset: 0; z-index: 9999; background: #080808;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity .6s var(--ease), visibility .6s;
+    }
+    #age-gate.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    #age-gate::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+    .gate-card {
+      position: relative; width: min(480px, 92vw);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 24px; padding: 52px 44px 44px; text-align: center;
+      box-shadow: 0 40px 100px rgba(0,0,0,.6);
+      animation: cardIn .7s var(--ease) both;
+    }
+    @keyframes cardIn {
+      from { opacity:0; transform:translateY(28px) scale(.97); }
+      to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+    .gate-logo    { font-family: var(--fh); font-size: 2.4rem; color: var(--accent); margin-bottom: 4px; }
+    .gate-tagline { font-size:.75rem; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin-bottom:38px; }
+    .gate-heading { font-family:var(--fh); font-size:1.85rem; line-height:1.2; margin-bottom:10px; }
+    .gate-sub     { font-size:.9rem; color:var(--muted); margin-bottom:34px; line-height:1.6; }
+    .dob-row { display:flex; gap:10px; margin-bottom:24px; }
+    .dob-row select, .dob-row input {
+      flex:1; background:rgba(255,255,255,.05); border:1px solid var(--border);
+      border-radius:10px; color:var(--text); font-family:var(--fb);
+      font-size:.9rem; padding:12px 8px; outline:none; text-align:center;
+      appearance:none; -webkit-appearance:none;
+      transition:border-color .2s, background .2s;
+    }
+    .dob-row select:focus, .dob-row input:focus { border-color:var(--accent); background:rgba(232,255,60,.06); }
+    .dob-row select option { background:#1a1a1a; }
+    .dob-error { font-size:.82rem; color:var(--danger); min-height:1.1em; margin:-14px 0 16px; }
+    .gate-buttons { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px; }
+    .btn-yes {
+      background:var(--accent); color:#080808; border:none; border-radius:12px;
+      font-family:var(--fb); font-weight:700; font-size:1rem; padding:15px;
+      cursor:pointer; transition:transform .18s var(--ease), box-shadow .18s;
+    }
+    .btn-yes:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(232,255,60,.35); }
+    .btn-no {
+      background:transparent; color:var(--muted); border:1px solid var(--border);
+      border-radius:12px; font-family:var(--fb); font-weight:500; font-size:1rem;
+      padding:15px; cursor:pointer;
+      transition:border-color .18s, color .18s, transform .18s var(--ease);
+    }
+    .btn-no:hover { border-color:var(--danger); color:var(--danger); transform:translateY(-2px); }
+    .gate-legal { font-size:.73rem; color:rgba(255,255,255,.2); line-height:1.5; }
+
+    /* DENIED SCREEN */
+    #denied-screen {
+      position:fixed; inset:0; z-index:10000; background:var(--bg);
+      display:flex; align-items:center; justify-content:center;
+      flex-direction:column; gap:18px;
+      opacity:0; visibility:hidden; transition:opacity .4s var(--ease),visibility .4s;
+    }
+    #denied-screen.visible { opacity:1; visibility:visible; }
+    .denied-icon  { font-size:3.5rem; }
+    .denied-title { font-family:var(--fh); font-size:2rem; color:var(--danger); }
+    .denied-msg   { font-size:.95rem; color:var(--muted); max-width:280px; text-align:center; line-height:1.6; }
+
+    /* APP LAYOUT */
+    #app { width:100vw; height:100dvh; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none; }
+    #app::-webkit-scrollbar { display:none; }
+
+    #top-nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      padding:16px 20px 10px;
+      display:flex; align-items:center; justify-content:space-between;
+      background:linear-gradient(to bottom,rgba(8,8,8,.9) 0%,transparent 100%);
+      pointer-events:none;
+    }
+    .nav-logo { font-family:var(--fh); font-size:1.5rem; color:var(--accent); }
+    .nav-tabs  { display:flex; gap:20px; pointer-events:all; }
+    .nav-tab {
+      font-size:.88rem; font-weight:500; color:var(--muted); cursor:pointer;
+      border:none; background:none; font-family:var(--fb); transition:color .2s;
+    }
+    .nav-tab.active { color:var(--text); }
+    .nav-search {
+      width:36px; height:36px; background:rgba(255,255,255,.07);
+      border:1px solid var(--border); border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; pointer-events:all; transition:background .2s;
+    }
+    .nav-search svg { width:16px; height:16px; fill:none; stroke:var(--text); stroke-width:2; }
+
+    /* VIDEO FEED */
+    .video-item {
+      position:relative; width:100vw; height:100dvh;
+      scroll-snap-align:start; scroll-snap-stop:always;
+      overflow:hidden; background:#000;
+    }
+    .video-item video { width:100%; height:100%; object-fit:cover; display:block; }
+    .video-item::before {
+      content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+      background:linear-gradient(to bottom,rgba(0,0,0,.3) 0%,transparent 30%,transparent 50%,rgba(0,0,0,.72) 100%);
+    }
+    .video-progress { position:absolute; top:0; left:0; height:3px; background:var(--accent); z-index:5; width:0%; transition:width .1s linear; }
+
+    .video-info { position:absolute; bottom:0; left:0; right:72px; z-index:2; padding:0 20px 100px; }
+    .video-user { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .user-avatar { width:38px; height:38px; border-radius:50%; border:2px solid rgba(255,255,255,.5); overflow:hidden; }
+    .user-avatar img { width:100%; height:100%; object-fit:cover; }
+    .user-name { font-weight:600; font-size:.95rem; }
+    .follow-btn {
+      background:transparent; border:1.5px solid rgba(255,255,255,.7); color:#fff;
+      border-radius:6px; font-size:.78rem; font-weight:600; padding:4px 12px; cursor:pointer;
+    }
+    .follow-btn.followed { background:var(--accent); border-color:var(--accent); color:#080808; }
+    .video-title { font-family:var(--fh); font-size:1.15rem; line-height:1.3; margin-bottom:5px; }
+    .video-desc  { font-size:.85rem; color:rgba(255,255,255,.75); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .tag { font-size:.78rem; color:var(--accent); font-weight:500; margin-right:6px; }
+
+    .video-actions {
+      position:absolute; right:12px; bottom:100px; z-index:2;
+      display:flex; flex-direction:column; align-items:center; gap:18px;
+    }
+    .action-btn { display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; border:none; background:none; color:#fff; }
+    .action-icon {
+      width:46px; height:46px; background:rgba(255,255,255,.12); border-radius:50%;
+      display:flex; align-items:center; justify-content:center; backdrop-filter:blur(10px);
+      border:1px solid rgba(255,255,255,0.08); transition: transform 0.2s;
+    }
+    .action-btn:active .action-icon { transform: scale(0.9); }
+    .action-icon svg { width:22px; height:22px; fill:none; stroke:#fff; stroke-width:1.8; }
+    .action-count { font-size:.78rem; font-weight:500; color:rgba(255,255,255,.85); }
+    .liked .action-icon svg { fill: #ff4444; stroke: #ff4444; }
+    .saved .action-icon svg { fill: var(--accent); stroke: var(--accent); }
+
+    .tap-target { position:absolute; inset:0; z-index:3; cursor:pointer; }
+    .play-pause-indicator {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
+      width:72px; height:72px; background:rgba(255,255,255,.18); border-radius:50%;
+      display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none;
+    }
+    .play-pause-indicator.show { animation: ppPop .65s var(--ease) forwards; }
+    @keyframes ppPop {
+      0% {transform:translate(-50%,-50%) scale(.5); opacity:0;}
+      50% {opacity:1;}
+      100% {transform:translate(-50%,-50%) scale(1.2); opacity:0;}
+    }
+
+    #mute-indicator {
+      position:fixed; top:68px; right:14px; z-index:200;
+      background:rgba(0,0,0,.7); border-radius:30px; padding:7px 14px;
+      display:flex; align-items:center; gap:7px; font-size:.8rem; color:#fff; cursor:pointer;
+    }
+
+    /* COMMENTS */
+    #comments-drawer {
+      position:fixed; bottom:0; left:0; right:0; z-index:500;
+      background:#111; border-radius:20px 20px 0 0; transform:translateY(100%);
+      transition:transform .45s var(--ease); max-height:70dvh; display:flex; flex-direction:column;
+    }
+    #comments-drawer.open { transform:translateY(0); }
+    .comments-list { overflow-y:auto; flex:1; padding:16px 20px; }
+    .comment-item { display:flex; gap:12px; margin-bottom:18px; }
+    .comment-avatar { width:32px; height:32px; border-radius:50%; background:var(--accent); color:#000; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem; }
+    .comment-name { font-size:.82rem; font-weight:700; margin-bottom:2px; }
+    .comment-text { font-size:.88rem; color:rgba(255,255,255,0.8); }
+    .comment-input-row { display:flex; gap:10px; padding:12px 16px; border-top:1px solid var(--border); }
+    .comment-input { flex:1; background:rgba(255,255,255,0.07); border:1px solid var(--border); border-radius:24px; color:#fff; padding:10px 16px; outline:none; }
+
+    #drawer-backdrop { position:fixed; inset:0; z-index:499; background:rgba(0,0,0,.5); opacity:0; visibility:hidden; transition: 0.3s; }
+    #drawer-backdrop.visible { opacity:1; visibility:visible; }
+
+    /* BOTTOM NAV */
+    #bottom-nav {
+      position:fixed; bottom:0; left:0; right:0; z-index:100;
+      display:flex; justify-content:space-around; align-items:center;
+      padding:10px 0 env(safe-area-inset-bottom,12px);
+      background:linear-gradient(to top,rgba(8,8,8,.95) 0%,transparent 100%);
+      pointer-events:none;
+    }
+    .bnav-btn { display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; border:none; background:none; color:var(--muted); font-size:.7rem; pointer-events:all; }
+    .bnav-btn.active { color:var(--accent); }
+    .bnav-btn svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8; }
+
+    #toast {
+      position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-10px);
+      z-index:9998; background:rgba(24,24,24,.96); border-radius:30px;
+      padding:10px 20px; font-size:.85rem; opacity:0; transition:0.3s; pointer-events:none;
+    }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- AGE GATE -->
+<div id="age-gate">
+  <div class="gate-card">
+    <div class="gate-logo">FLUX</div>
+    <div class="gate-tagline">Premium Stream</div>
+    <div class="gate-heading">Age Verification</div>
+    <p class="gate-sub">This platform contains content intended for adults only. Please confirm your age to continue.</p>
+    <div class="dob-row">
+      <select id="dob-month">
+        <option value="" disabled selected>Month</option>
+        <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
+        <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
+        <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
+        <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+      </select>
+      <input id="dob-day" type="number" placeholder="Day" />
+      <input id="dob-year" type="number" placeholder="Year" />
+    </div>
+    <p class="dob-error" id="dob-error"></p>
+    <div class="gate-buttons">
+      <button class="btn-yes" id="btn-yes">I am 18+</button>
+      <button class="btn-no"  id="btn-no">I am under 18</button>
+    </div>
+  </div>
+</div>
+
+<!-- DENIED SCREEN -->
+<div id="denied-screen">
+  <div class="denied-icon">🚫</div>
+  <div class="denied-title">Access Denied</div>
+  <p class="denied-msg">You must be 18 or older to access this platform.</p>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+  <nav id="top-nav">
+    <div class="nav-logo">FLUX</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active">For You</button>
+      <button class="nav-tab">Following</button>
+    </div>
+    <div class="nav-search" id="nav-search-btn">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+  </nav>
+
+  <div id="video-feed"></div>
+
+  <div id="mute-indicator">
+    <span id="mute-label">Sound On</span>
+  </div>
+
+  <nav id="bottom-nav">
+    <button class="bnav-btn active" id="bnav-home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Home
+    </button>
+    <button class="bnav-btn" id="bnav-discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>Discover</button>
+    <button class="bnav-btn" id="bnav-upload"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/></svg>Upload</button>
+    <button class="bnav-btn" id="bnav-me"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>Me</button>
+  </nav>
+</div>
+
+<!-- COMMENTS -->
+<div id="drawer-backdrop"></div>
+<div id="comments-drawer">
+  <div class="comments-list" id="comments-list"></div>
+  <div class="comment-input-row">
+    <input class="comment-input" id="comment-input" type="text" placeholder="Add a comment..." />
+    <button id="comment-send-btn" style="background:var(--accent); border:none; border-radius:50%; width:36px; height:36px; cursor:pointer;">></button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ADS SCRIPTS -->
+<!-- Popunder Ad -->
+<script src="https://pl28979872.profitablecpmratenetwork.com/97/1b/d6/971bd603d0aef837c8d73b5b3f464ed4.js"></script>
+<!-- Social Bar Ad -->
+<script src="https://pl28979924.profitablecpmratenetwork.com/70/6f/31/706f315b5bec967372ff3f63ddfe3c48.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  var VIDEOS = [
+    { id:1, url:'https://www.w3schools.com/html/mov_bbb.mp4', poster:'https://picsum.photos/seed/v1/400/700', title:'Big Buck Bunny', desc:"Lovable rabbit adventure.", username:'@blender', avatar:'https://picsum.photos/seed/u1/64/64', likes:148200, comments:3410 },
+    { id:2, url:'https://www.w3schools.com/html/movie.mp4', poster:'https://picsum.photos/seed/v2/400/700', title:'Futuristic City', desc:'Neon-lit streets clip.', username:'@neonvisions', avatar:'https://picsum.photos/seed/u2/64/64', likes:92500, comments:1207 },
+    { id:3, url:'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', poster:'https://picsum.photos/seed/v3/400/700', title:'Elephants Dream', desc:'Surreal journey.', username:'@dreamer', avatar:'https://picsum.photos/seed/u3/64/64', likes:214700, comments:5882 }
+  ];
+
+  var isMuted = false, currentIndex = 0;
+  var progressTimers = {};
+
+  function getById(id) { return document.getElementById(id); }
+
+  function showToast(msg) {
+    var t = getById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function () { t.classList.remove('show'); }, 2000);
+  }
+
+  function verifyAge() {
+    var year = parseInt(getById('dob-year').value, 10);
+    if (!year || (new Date().getFullYear() - year < 18)) {
+      getById('dob-error').textContent = "Minimum age is 18.";
+      return;
+    }
+    localStorage.setItem('flux_age_verified','true');
+    getById('age-gate').classList.add('hidden');
+    launchApp();
+  }
+
+  function launchApp() {
+    getById('app').style.display = 'block';
+    renderVideos();
+    setupObserver();
+  }
+
+  function renderVideos() {
+    var feed = getById('video-feed');
+    VIDEOS.forEach(function (v, idx) {
+      var div = document.createElement('div');
+      div.className = 'video-item';
+      div.dataset.id = v.id;
+      div.innerHTML = `
+        <div class="video-progress" id="prog-${v.id}"></div>
+        <video id="vid-${v.id}" src="${v.url}" poster="${v.poster}" loop muted playsinline></video>
+        <div class="tap-target" onclick="this.previousElementSibling.paused ? this.previousElementSibling.play() : this.previousElementSibling.pause()"></div>
+        <div class="video-info">
+          <div class="video-user"><span class="user-name">${v.username}</span></div>
+          <div class="video-title">${v.title}</div>
+        </div>
+        <div class="video-actions">
+          <div class="action-btn" onclick="this.classList.toggle('liked')"><div class="action-icon">❤</div><span class="action-count">${v.likes}</span></div>
+          <div class="action-btn" onclick="document.getElementById('comments-drawer').classList.add('open'); document.getElementById('drawer-backdrop').classList.add('visible');"><div class="action-icon">💬</div><span class="action-count">${v.comments}</span></div>
+        </div>`;
+      feed.appendChild(div);
+    });
+  }
+
+  function setupObserver() {
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var vidId = entry.target.dataset.id;
+        var video = getById('vid-' + vidId);
+        if (entry.isIntersecting) {
+          video.play().catch(function(){});
+          startProgress(vidId, video);
+        } else {
+          video.pause();
+          stopProgress(vidId);
+        }
+      });
+    }, { threshold: 0.7 });
+    document.querySelectorAll('.video-item').forEach(function (el) { obs.observe(el); });
+  }
+
+  function startProgress(id, vid) {
+    progressTimers[id] = setInterval(function () {
+      getById('prog-' + id).style.width = (vid.currentTime / vid.duration * 100) + '%';
+    }, 100);
+  }
+
+  function stopProgress(id) { clearInterval(progressTimers[id]); }
+
+  getById('btn-yes').addEventListener('click', verifyAge);
+  getById('btn-no').addEventListener('click', function() { getById('age-gate').style.display = 'none'; getById('denied-screen').classList.add('visible'); });
+  getById('drawer-backdrop').addEventListener('click', function() { getById('comments-drawer').classList.remove('open'); this.classList.remove('visible'); });
+
+  if (localStorage.getItem('flux_age_verified') === 'true') {
+    getById('age-gate').style.display = 'none';
+    launchApp();
+  }
+})();
+</script>
+</body>
+</html>
